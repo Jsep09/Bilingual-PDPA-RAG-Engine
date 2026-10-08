@@ -1,54 +1,128 @@
 # Bilingual PDPA-RAG Engine
 
-โครงการเรียนรู้การสร้างระบบ Retrieval-Augmented Generation (RAG) ที่ค้นเอกสาร PDPA ภาษาไทยและฉบับแปลภาษาอังกฤษ เพื่อตอบคำถามภาษาไทยหรืออังกฤษพร้อมแสดงแหล่งข้อความที่ใช้ตอบ
+A Thai–English Retrieval-Augmented Generation (RAG) project exploring how to answer questions about Thailand's Personal Data Protection Act (PDPA) with traceable document evidence.
 
-> โครงการนี้เป็นการฝึกทำจริง เจ้าของโครงการต้องลงมือออกแบบ เขียนโค้ด ทดลอง และวิเคราะห์ผลด้วยตนเองมากกว่า 50% Agent ทำหน้าที่อธิบาย ตั้งคำถาม ช่วยตรวจงาน และช่วยแก้ปัญหาเมื่อร้องขอ
+**Status: early development — source documents collected; implementation has not started.**
 
-## สถานะปัจจุบัน
+## Overview
 
-- มี PDF ต้นทางสองภาษาใน `Data/raw/`
-- เตรียมไฟล์ `Data/extracted/pdpa_th.txt` และ `pdpa_en.txt` ไว้แล้ว แต่ทั้งสองไฟล์ยังว่าง **ยังไม่ได้ดึงข้อความ**
-- `Data/jsonl/` เตรียมไว้สำหรับข้อมูลที่แบ่งเป็นหน่วยอ้างอิง เช่น หน้า มาตรา หรือ chunk
-- ยังไม่มี pipeline ดึงข้อความ, vector database, API หรือหน้าเว็บ
+Legal documents can be difficult to navigate, especially when a question and its supporting text are in different languages. This project aims to let users ask questions in Thai or English, retrieve relevant passages from the Thai act and its English translation, and inspect the evidence behind each answer.
 
-## แหล่งข้อมูล
+The focus is a local, reproducible RAG baseline: preserve document provenance, evaluate retrieval across languages, and make insufficient evidence visible to the user.
 
-- [พระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล ภาษาไทย](https://old.parliament.go.th/ewtadmin/ewt/elaw_parcy/ewt_dl_link.php?nid=2975)
-- [ฉบับแปลภาษาอังกฤษ](https://data.opendevelopmentmekong.net/dataset/78c90118-6671-4c19-afe1-7bfbace4d46a/resource/ec616be5-9fbf-4071-b4b5-cb1f3e46e826/download/entranslation_of_the_personal_data_protection_act_0.pdf)
+## Target capabilities
 
-## โครงสร้างโปรเจกต์
+The following capabilities are planned:
+
+- **Bilingual questions:** accept questions in Thai and English.
+- **Cross-language retrieval:** investigate whether questions in one language can retrieve relevant passages in the other.
+- **Evidence-backed answers:** display supporting passages with source file, page, and section or article references when reliably available.
+- **Clear source attribution:** distinguish the Thai source from the English translation throughout the pipeline and interface.
+- **Insufficient-evidence handling:** state when the retrieved material does not support an answer.
+
+## Current progress
+
+| Area | Current state |
+| --- | --- |
+| Source documents | Thai and English PDFs stored in `Data/raw/` |
+| Text extraction | Empty text placeholders prepared; extraction has not been run |
+| Structured data | `Data/jsonl/` reserved for future records with provenance metadata |
+| RAG pipeline | Planned; no chunking, embeddings, indexing, retrieval, or answer generation implemented |
+| Application | Frontend and Backend directories prepared; frameworks not initialized |
+| Evaluation | Experiment record format defined; no recorded experiments or benchmark results yet |
+
+There is no runnable application or live demo at this stage. This repository currently documents the project scope, source material, and intended implementation approach.
+
+## Planned architecture
+
+```mermaid
+flowchart TD
+    A[Thai and English source PDFs] --> B[Extract and inspect text]
+    B --> C[Structured records with source metadata]
+    C --> D[Chunk and embed]
+    D --> E[Rebuildable vector index]
+    Q[Question in Thai or English] --> R[Retrieve supporting passages]
+    E --> R
+    R --> G[Generate an answer grounded in evidence]
+    G --> U[Show answer, passages, and source locations]
+```
+
+Document preparation and indexing will be separate from per-question retrieval and answering. This allows extraction quality, retrieval behavior, and answer grounding to be evaluated independently.
+
+### Intended stack
+
+| Component | Planned technology |
+| --- | --- |
+| Frontend | React, TypeScript, Vite |
+| Backend API | Python, FastAPI |
+| Python environment and dependencies | uv |
+| Reviewable intermediate data | Plain text and JSONL |
+| Embedding model, generation model, and vector storage | Not selected yet |
+
+The first milestone is a working local baseline. Containerization, cloud deployment, and MLOps will be considered after the pipeline and evaluation workflow are reproducible.
+
+## Engineering focus
+
+- **Extraction quality before indexing:** compare extracted text against the original PDFs, including Thai characters, article numbers, headings, and reading order.
+- **Provenance through every stage:** retain language, source file, page, section or article, and text where extraction can establish them reliably.
+- **Rebuildable indexes:** keep readable source data separate from generated vector indexes.
+- **Measured experiments:** change one factor at a time and record inputs, settings, observed outputs, and limitations.
+- **Separate retrieval and answer evaluation:** inspect whether the correct evidence was found before assessing how the answer uses it.
+
+## Evaluation plan
+
+The planned evaluation set will include Thai questions, English questions, cross-language retrieval cases, and questions with insufficient evidence in the source documents.
+
+| Evaluation area | Question to investigate |
+| --- | --- |
+| Extraction | Are characters, document order, and article boundaries preserved? |
+| Retrieval | Do retrieved passages contain the expected supporting article or section? |
+| Answer grounding | Are answer claims supported by the retrieved passages? |
+| Citations | Can a reader locate the cited evidence in the original document? |
+| Insufficient evidence | Does the system clearly acknowledge missing support? |
+
+Experiments will compare factors such as extraction method, chunk size, and the number of retrieved passages. Methods, observations, and conclusions will be recorded in [`experiments/`](experiments/README.md). Performance claims will be added only after measurements are recorded.
+
+## Roadmap
+
+- [x] Collect Thai and English source PDFs.
+- [x] Define project scope, component boundaries, and experiment record format.
+- [ ] Extract text and inspect representative pages against both PDFs.
+- [ ] Produce structured records with language and source metadata.
+- [ ] Implement a local retrieval and answer-generation baseline with citations.
+- [ ] Build and run bilingual and cross-language evaluation cases.
+- [ ] Record controlled experiments and document findings.
+- [ ] Add a FastAPI service and a React interface for questions and evidence.
+
+## Explore the repository
 
 ```text
 .
 ├── Data/
-│   ├── raw/             # PDF ต้นฉบับ เก็บไว้เพื่อเทียบผล
-│   ├── extracted/       # ข้อความที่ดึงจาก PDF แยกภาษา
-│   └── jsonl/           # ข้อความพร้อม metadata สำหรับ ingest และประเมินผล
-├── Backend/             # โค้ดดึงข้อมูล, ingest, retrieval, answer และ API
-├── Frontend/            # ส่วนติดต่อผู้ใช้ และการแสดงคำตอบกับแหล่งอ้างอิง
-├── experiments/         # บันทึกการทดลองจริงที่ agent สรุปจากหลักฐาน
-├── agent-knowledge/     # บันทึกบริบทให้ agent แยกตามหัวข้อ
-├── AGENTS.md            # กติกาหลักสำหรับ agent
-└── CLAUDE.md            # ชี้ไปยัง AGENTS.md เท่านั้น
+│   ├── raw/          # Thai source PDF and English translation PDF
+│   ├── extracted/    # Empty placeholders for extracted text
+│   └── jsonl/        # Reserved for structured text and source metadata
+├── Backend/          # Reserved for the data pipeline, RAG logic, and API
+├── Frontend/         # Reserved for the question-and-evidence interface
+├── experiments/      # Experiment record format; results to follow
+├── agent-knowledge/  # Project context and design notes
+└── README.md
 ```
 
-ไฟล์ข้อความและ JSONL เป็นข้อมูลที่อ่าน ตรวจ และเปรียบเทียบได้ง่ายในช่วงทดลอง ส่วน vector database เป็นผลลัพธ์ที่สร้างใหม่ได้จากข้อมูลเหล่านี้ จึงค่อยเพิ่มเมื่อถึงขั้น ingest
+To inspect the source material and project notes locally:
 
-## ลำดับการเรียนรู้และทดลอง
+```bash
+git clone https://github.com/Jsep09/Bilingual-PDPA-RAG-Engine.git
+cd Bilingual-PDPA-RAG-Engine
+```
 
-1. **Data:** ดึงข้อความจาก PDF ทั้งสองภาษา ตรวจหน้าแรก หน้าที่มีหลายมาตรา และหน้าท้ายกับต้นฉบับ บันทึกปัญหาภาษาไทย เลขมาตรา และลำดับข้อความ
-2. **Preparation:** ออกแบบหน่วยข้อมูลและ metadata เช่น ภาษา หน้า มาตรา และชื่อไฟล์ต้นทาง แล้วสร้าง JSONL
-3. **Baseline RAG:** แบ่งข้อความเป็น chunk, สร้าง embedding, ค้นข้อความ และตอบโดยแสดงหลักฐานที่ค้นพบ
-4. **Evaluation:** เจ้าของโครงการเขียนชุดคำถามภาษาไทย อังกฤษ และข้ามภาษา พร้อมคำตอบหรือมาตราที่คาดหวัง วัดทั้งการค้นและคำตอบ
-5. **Experiments:** เปลี่ยนทีละปัจจัย เช่น วิธีดึงข้อความ ขนาด chunk หรือจำนวนผลค้น บันทึกค่าเริ่มต้น ผลหลังเปลี่ยน และข้อสรุป
-6. **Interface:** เพิ่ม Backend API และ Frontend หลังจากตรวจสอบ baseline แล้ว
+Start with the PDFs in [`Data/raw/`](Data/raw/) and the [experiment guide](experiments/README.md). Installation and run instructions will be added when the application is implemented.
 
-แนวทาง RAG และการประเมินผลอ้างอิงจาก `../week5_learning/` โดยนำหลักการมาปรับใช้กับเอกสาร PDPA ไม่คัดลอกโปรเจกต์ตัวอย่างทั้งชุด
+## Source documents
 
-เจ้าของโปรเจกต์ลงมือทดลอง ส่วน agent เขียนสรุปผลใน `experiments/` จากสิ่งที่เกิดขึ้นจริง โดยไม่แต่งผลที่ยังไม่ได้ตรวจ
+| Document | Local file | Source link |
+| --- | --- | --- |
+| Thai Personal Data Protection Act | [`PDPA (TH).pdf`](Data/raw/PDPA%20%28TH%29.pdf) | [Thai Parliament document](https://old.parliament.go.th/ewtadmin/ewt/elaw_parcy/ewt_dl_link.php?nid=2975) |
+| English translation | [`PDPA (Eng).pdf`](Data/raw/PDPA%20%28Eng%29.pdf) | [Open Development Mekong document](https://data.opendevelopmentmekong.net/dataset/78c90118-6671-4c19-afe1-7bfbace4d46a/resource/ec616be5-9fbf-4071-b4b5-cb1f3e46e826/download/entranslation_of_the_personal_data_protection_act_0.pdf) |
 
-ภาพรวมความสัมพันธ์ระหว่างโปรเจกต์นี้กับ `week5_learning/` อยู่ที่ `../ROOT_AGENTS.md`
-
-## หลักการตอบคำถาม
-
-ระบบที่สร้างในอนาคตควรแสดงข้อความและตำแหน่งอ้างอิงจากเอกสารต้นทาง แยกภาษาไทยกับฉบับแปลให้ชัด หากไม่พบหลักฐานเพียงพอให้บอกตามตรง ผลลัพธ์เป็นเครื่องมือเพื่อการเรียนรู้และตรวจเอกสาร ไม่ควรเสนอเป็นคำวินิจฉัยทางกฎหมาย
+The Thai document and English translation are kept as distinct sources. The planned system is an educational document-retrieval tool; its outputs should not be treated as legal advice.
