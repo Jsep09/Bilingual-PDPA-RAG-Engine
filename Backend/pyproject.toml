@@ -22,4 +22,6 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "ipykernel>=7.4.0",
+    "jiwer==4.0.0",
+    "matplotlib>=3.9,<4",
 ]

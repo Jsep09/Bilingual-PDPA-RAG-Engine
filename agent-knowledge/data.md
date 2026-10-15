@@ -3,8 +3,9 @@
 ## Directories
 
 - `Data/raw/`: immutable source PDFs, one Thai and one English.
-- `Data/extracted/`: readable text extracted from each PDF. Full-document files remain empty placeholders; a Thai five-page sample was generated during agent troubleshooting on 2026-10-08.
-- `Data/jsonl/`: future structured records with text and provenance metadata.
+- `Data/extracted/`: intended location for readable extraction outputs in the local pipeline; absent as of 2026-10-15. The previous placeholders and sample are no longer present.
+- `Data/jsonl/`: Thai Typhoon OCR output, one record per PDF page. The imported folder had a leading U+0E4B character, corrected to `jsonl` on 2026-10-15 without changing file content.
+- `Data/txt/` and `Data/md/`: owner-imported Thai Colab exports, retained in their supplied locations.
 
 ## First hands-on experiment
 
@@ -15,6 +16,20 @@ The owner should choose an extraction method, run it on both PDFs, and compare s
 For future JSONL records, aim to retain `language`, `source_file`, `page`, `section_or_article`, and `text` when reliably available. Do not invent page or article values if extraction cannot establish them.
 
 ## Extraction script
+
+## Colab Typhoon OCR notebook
+
+The owner chose the OCR approach and removed the previous extraction pipeline/script, retaining the exploratory notebook as experiment history. Do not recreate that pipeline as part of OCR evaluation.
+
+After reviewing the known English errors and evaluation plan, the owner explicitly authorized committing and pushing the work as a historical record on 2026-10-15. This supersedes the earlier conditional hold on commit/push, but does not approve OCR accuracy or resolve English page 36. Preserve raw outputs and the documented limitations.
+
+On 2026-10-15, prepared `Backend/notebooks/04_ocr_evaluation.ipynb` and its guide. Following the owner's request to keep evaluation small, it uses CER, English WER, one per-page CER comparison plot, and text alignment, with optional CSV/plot export. Human-checked full-page references go in `Data/ground_truth/{en,th}/page_NNN.txt`; none have been supplied yet, so actual OCR accuracy remains unevaluated. Multiple model JSONL files can be compared on exactly the same reference pages. Tests covered real-data loading/no-reference behavior and isolated synthetic comparisons; they are not OCR accuracy results. No annotation manifest, automatic approval threshold, table metric, or replacement OCR model was added. The research links, including the owner's LlamaIndex OCR accuracy article, are recorded in the guide.
+
+The owner subsequently imported the English exports on 2026-10-15. All 39 pages pass structural checks and TXT/Markdown match JSONL, but English PDF page 36 has confirmed content errors: OCR replaces the Section 83 continuation and changes Section 84's `five million Baht` to `three million Baht`. Verified against a rendered PDF page. The English data is not approved for indexing; raw exports remain unchanged. Commit/push was withheld under the owner's conditional request. See `experiments/002-typhoon-english-ocr.md` for checks and next steps.
+
+On 2026-10-15, the owner imported the Thai JSONL, TXT, and Markdown outputs. Structural validation found 44 records with consecutive `pdf_page` values 1–44, all `language=th`, `source_file=PDPA (TH).pdf`, and `model=typhoon-ai/typhoon-ocr1.5-2b`. No blank text or `possibly_truncated=true` records were found; text totals 84,305 characters. TXT and Markdown exactly match reconstruction from the JSONL using the notebook's export format after normalizing line endings. All `section_or_article` values remain null. Page 1 includes a `<figure>` description; OCR accuracy and that description have not been visually verified against the PDF. No English OCR export is present locally. See `experiments/001-typhoon-thai-ocr.md`.
+
+On 2026-10-15, the owner reported obtaining the Thai OCR result and running the English notebook on Colab. The agent downloaded the current Colab notebook and synchronized `Backend/notebooks/03_typhoon_ocr_colab.ipynb` byte-for-byte. Compared with the previous local copy, the source changes are `LANGUAGE = 'en'` and export to JSONL, TXT, and Markdown under Drive `PDPA_RAG/Data/{jsonl,txt,md}/`. The existing Markdown instructions still describe JSONL-only export. At inspection, the visible Colab output identified the English PDF as 39 pages and the GPU as Tesla T4; the model-loading cell was executing. This snapshot does not establish that English OCR or export completed, and the Thai output files were not inspected. No Colab cells were edited or executed by the agent.
 
 ## Exploratory notebook
 
